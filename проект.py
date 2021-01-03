@@ -5,8 +5,10 @@ class Board:
     def __init__(self):
         self.x = 300
         self.y = 300
+        self.clock = pygame.time.Clock()
+        self.delay = 0
 
-    def your_tank(self, pos, screen):
+    def your_tank(self, pos):
         screen = pygame.display.set_mode((1920, 1020))
         screen.fill((0, 150, 0))
         if pos[0] - self.x == 0:
@@ -29,22 +31,24 @@ class Board:
                                                 (x1 + width_gun * sin, y1 - width_gun * cos)))
         pygame.draw.circle(screen, (255, 0, 0), (self.x, self.y), 30)
 
-    def move_tank(self, key, screen, pos):
-        if key == pygame.K_w:
-            self.y -= 1
-        elif key == pygame.K_s:
-            self.y += 1
-        elif key == pygame.K_a:
-            self.x -= 1
-        else:
-            self.x += 1
-        self.your_tank(pos, screen)
+    def move_tank(self):
+        global key, pos
+        for i in range(len(key)):
+            if key[i] == pygame.K_w:
+                self.y -= 1
+            elif key[i] == pygame.K_s:
+                self.y += 1
+            elif key[i] == pygame.K_a:
+                self.x -= 1
+            elif key[i] == pygame.K_d:
+                self.x += 1
+        self.your_tank(pos)
 
 
 board = Board()
 push = False
 pos = 0
-key = 0
+key = []
 screen = pygame.display.set_mode((1920, 1020))
 screen.fill((0, 150, 0))
 pygame.display.flip()
@@ -54,16 +58,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.MOUSEMOTION:
-            board.your_tank(event.pos, screen)
+        if event.type == pygame.MOUSEMOTION:
             pos = event.pos
-        elif event.type == pygame.KEYDOWN:
+            board.move_tank()
+        if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
                 push = True
-                key = event.key
-        if event.type == pygame.KEYUP:
-            if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
+                key.append(event.key)
+        elif event.type == pygame.KEYUP:
+            if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d) and len(key) == 1:
+                key = []
                 push = False
+            elif event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
+                del key[key.index(event.key)]
     if push:
-        board.move_tank(key, screen, pos)
+        board.move_tank()
     pygame.display.flip()
