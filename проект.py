@@ -22,10 +22,11 @@ class Board:
             sin = -sin
         x1 = self.m[0][0] + cos * 80
         y1 = self.m[0][1] + sin * 80
-        pygame.draw.polygon(screen, (0, 0, 0), ((self.m[0][0] + width_gun * sin, self.m[0][1] - width_gun * cos),
-                                                (self.m[0][0] - width_gun * sin, self.m[0][1] + width_gun * cos),
-                                                (x1 - width_gun * sin, y1 + width_gun * cos),
-                                                (x1 + width_gun * sin, y1 - width_gun * cos)))
+        pygame.draw.polygon(screen, (0, 0, 0),
+                            ((self.m[0][0] + width_gun * sin, self.m[0][1] - width_gun * cos),
+                             (self.m[0][0] - width_gun * sin, self.m[0][1] + width_gun * cos),
+                             (x1 - width_gun * sin, y1 + width_gun * cos),
+                             (x1 + width_gun * sin, y1 - width_gun * cos)))
         pygame.draw.circle(screen, (255, 255, 0), (self.m[0][0], self.m[0][1]), 30)
 
     def move_tank(self):
@@ -39,12 +40,13 @@ class Board:
                 self.m[0][0] -= 1
             elif key[i] == pygame.K_d and self.m[0][0] < 1890:
                 self.m[0][0] += 1
-        self.draw_tank()
 
     def draw_objects(self):
         k = []
+        index = 0
+        self.draw_tank()
         for i in range(1, len(self.m)):
-            self.m[i][4] += 1
+            self.m[i][4] += 30
             if self.m[i][2] - self.m[i][0] == 0 or self.m[i][3] - self.m[i][1] == 0:
                 sin = 0
                 cos = 1
@@ -58,13 +60,14 @@ class Board:
                 sin = -sin
             x1 = self.m[i][0] + cos * self.m[i][4]
             y1 = self.m[i][1] + sin * self.m[i][4]
-            self.draw_tank()
             if 5 < x1 < 1915 and 5 < y1 < 1015:
                 pygame.draw.circle(screen, (0, 0, 0), (x1, y1), 10)
             else:
                 k.append(i)
-            for i in k:
-                del self.m[i]
+        k.sort()
+        for i in k:
+            del self.m[i - index]
+            index += 1
 
 
 board = Board()
@@ -82,7 +85,6 @@ while running:
         if event.type == pygame.MOUSEMOTION:
             pos = event.pos
             board.m[0] = [board.m[0][0], board.m[0][1], event.pos[0], event.pos[1]]
-            board.draw_tank()
         if event.type == pygame.MOUSEBUTTONDOWN:
             board.m.append([board.m[0][0], board.m[0][1], event.pos[0], event.pos[1], 0])
         if event.type == pygame.KEYDOWN:
