@@ -4,10 +4,12 @@ import pygame
 class Board:
     def __init__(self):
         self.m = [[300, 300, 0, 0]]
+        self.time = 0
 
     def draw_tank(self):
+        global clock
         screen = pygame.display.set_mode((1920, 1020))
-        screen.fill((0, 150, 0))
+        screen.fill((100, 100, 100))
         if self.m[0][2] - self.m[0][0] == 0 or self.m[0][3] - self.m[0][1] == 0:
             sin = 0
             cos = 1
@@ -27,7 +29,11 @@ class Board:
                              (self.m[0][0] - width_gun * sin, self.m[0][1] + width_gun * cos),
                              (x1 - width_gun * sin, y1 + width_gun * cos),
                              (x1 + width_gun * sin, y1 - width_gun * cos)))
-        pygame.draw.circle(screen, (255, 255, 0), (self.m[0][0], self.m[0][1]), 30)
+        pygame.draw.circle(screen, (255, 0, 0), (self.m[0][0], self.m[0][1]), 30)
+        if self.time < 3000:
+            self.time += clock.tick()
+        pygame.draw.circle(screen, (0, 255, 0), (self.m[0][0], self.m[0][1]),
+                           30 / (3000 / self.time))
 
     def move_tank(self):
         global key
@@ -42,6 +48,7 @@ class Board:
                 self.m[0][0] += 1
 
     def draw_objects(self):
+        global shot
         k = []
         index = 0
         self.draw_tank()
@@ -73,20 +80,30 @@ class Board:
 board = Board()
 push = False
 key = []
+shot = True
 screen = pygame.display.set_mode((1920, 1020))
-screen.fill((0, 150, 0))
+screen.fill((100, 100, 100))
 pygame.display.flip()
 running = True
 x = 0
+clock = pygame.time.Clock()
+reload = pygame.event.custom_type()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == reload:
+            shot = True
         if event.type == pygame.MOUSEMOTION:
             pos = event.pos
             board.m[0] = [board.m[0][0], board.m[0][1], event.pos[0], event.pos[1]]
         if event.type == pygame.MOUSEBUTTONDOWN:
-            board.m.append([board.m[0][0], board.m[0][1], event.pos[0], event.pos[1], 0])
+            if shot:
+                clock.tick()
+                board.time = 0
+                pygame.time.set_timer(reload, 3000, True)
+                board.m.append([board.m[0][0], board.m[0][1], event.pos[0], event.pos[1], 0])
+                shot = False
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
                 push = True
